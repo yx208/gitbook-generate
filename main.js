@@ -144,7 +144,7 @@ function main() {
 
 
     sort_files(files);
-    console.log(files);
+    // console.log(files);
     each_handle_files(dir + '/articles', files);
     extract_introduction(files);
     write_summary(dir, files);
