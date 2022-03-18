@@ -10,89 +10,58 @@ function get_files_from_dir(dir) {
     return fs.readdirSync(dir).filter(file => fs.statSync(path.join(dir, file)).isFile());
 }
 
-/**
- * @param {string} str
- */
-function match_prefix_1(str) {
-    return str.slice(0, -3).indexOf(" _ ");
-}
-
-/**
- * @param {string} str
- */
-function match_prefix_2(str) {
-    return str.slice(0, -3).indexOf("｜");
-}
-
 function is_number_prefix(str) {
     return !isNaN(parseInt(str));
 }
 
-function gen_break_point(file) {
+/**
+ * @param {string} str
+ * @return {Array}
+ */
+function split_name(str) {
+    const s = [' _ ', '｜'];
+    const index = s.findIndex(i => str.includes(i));
 
-    let index = match_prefix_1(file),
-        no = '',
-        real_name = '';
-
-    if (index !== -1) {
-        // 取出 01
-        no = file.substring(0, index);
-        // 取出 xxx
-        real_name = file.substring(index + 3);
-    } else {
-        index = match_prefix_2(file);
-        // 情况为 `30｜HTTP`
-        if (index !== -1) {
-            // 取出 30
-            no = file.substring(0, index);
-            // 取出 HTTP
-            real_name = file.substring(index + 1);
-        }
-    }
-
-    return { no, real_name };
+    return (index === -1) ? ['', str] : str.split(s[index]);
 }
 
 /**
  * @param {string} op_dir
- * @return {{file_name: string, title: string, ctime: number}[]}
+ * @return {object[]}
  */
 function rename_articles(op_dir) {
     const files = get_files_from_dir(op_dir);
     return files.map(file => {
+        const [ no, real_name ] = split_name(file);
+        const title = `${is_number_prefix(no) ? `第 ${no} 章` : no} ${real_name}`,
+            name = no + '.md',
+            origin_path = path.join(op_dir, file),
+            target_path = path.join(op_dir, name),
+            ctime = fs.statSync(origin_path).ctime.getTime();
 
-        clear_img_query(path.join(op_dir, file));
+        clear_img_query(origin_path);
+        fs.renameSync(origin_path, target_path);
 
-        const { no, real_name } = gen_break_point(file);
-
-        const title = `${is_number_prefix(no) ? `第 ${no} 章` : no} ${real_name}`;
-        const file_name = no + '.md';
-
-        const origin_name = path.join(op_dir, file);
-        const target_name = path.join(op_dir, file_name);
-        fs.renameSync(origin_name, target_name);
-
-        const ctime = fs.statSync(target_name).ctime.getTime();
-
-        return { title, file_name, ctime };
+        return { title, name, ctime, path: target_path };
     });
 }
 
 /**
  * @param {string} dir
- * @param {{file_name: string, title: string, ctime: number}[]} files
+ * @param post_path
+ * @param {object[]} files
  */
-function gen_toc(dir, files) {
+function gen_toc(dir, post_path, files) {
     const summary = path.join(dir, 'SUMMARY.md');
     files.map(item => {
-        const row_item = `* [${item.title}](articles/${item.file_name})\n`;
+        const row_item = `* [${item.title}](articles/${item.name})\n`;
         fs.appendFileSync(summary, row_item);
     });
 }
 
 /**
  * 把开篇词放到最前面
- * @param {{file_name: string, title: string, ctime: number}[]} files
+ * @param {object[]} files
  */
 function extract_introduction(files) {
     const index = files.findIndex(file => file.title.startsWith("开篇词"));
@@ -113,7 +82,7 @@ function clear_img_query(file_path) {
 
 /**
  * 对读取到的文件列表，根据创建时间进行排序
- * @param {{file_name: string, title: string, ctime: number}[]} files
+ * @param {object[]} files
  */
 function sort_files(files) {
     files.sort((a, b) => a.ctime - b.ctime);
@@ -152,7 +121,8 @@ async function parse_article_path(root_path) {
         initial: 'articles'
     });
 
-    const article_absolute_path = path.join(root_path, await prompt_article.run());
+    const article_path = await prompt_article.run()
+    const article_absolute_path = path.join(root_path, article_path);
 
     if (!fs.existsSync(article_absolute_path)) {
         console.log(`所选目标 [${article_absolute_path}] 文件夹不存在！`);
@@ -164,7 +134,7 @@ async function parse_article_path(root_path) {
         process.exit();
     }
 
-    return article_absolute_path;
+    return article_path;
 }
 
 /**
