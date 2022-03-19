@@ -47,8 +47,6 @@ function rename_articles(op_dir) {
             target_path = path.join(op_dir, name),
             ctime       = fs.statSync(origin_path).ctime.getTime();
 
-        console.log(title);
-
         fs.renameSync(origin_path, target_path);
 
         return {
