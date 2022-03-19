@@ -47,8 +47,6 @@ function rename_articles(op_dir) {
             target_path = path.join(op_dir, name),
             ctime       = fs.statSync(origin_path).ctime.getTime();
 
-        console.log(title);
-
         fs.renameSync(origin_path, target_path);
 
         return {
@@ -67,7 +65,7 @@ function rename_articles(op_dir) {
  */
 function gen_toc(root_path, post_relative_path, files) {
     const summary_path = path.join(root_path, 'SUMMARY.md');
-    fs.writeFileSync(summary_path, `* [前言](README.md)\n`);
+    fs.writeFileSync(summary_path, "# Summary\n");
     files.map(item => {
         const row_item = `* [${item.title}](${post_relative_path}/${item.name})\n`;
         fs.appendFileSync(summary_path, row_item);
