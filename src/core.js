@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require('path');
 const { Input } = require('enquirer');
+const { randomInt } = require('crypto');
 
 /**
  * 这一步能拿到想要的文件 xx.md
@@ -12,7 +13,7 @@ function get_files_from_dir(dir) {
     return fs.readdirSync(dir).filter(file => file.endsWith('.md') && fs.statSync(path.join(dir, file)).isFile());
 }
 
-function is_number_prefix(str) {
+function check_number_prefix(str) {
     return !isNaN(parseInt(str));
 }
 
@@ -40,12 +41,12 @@ function rename_articles(op_dir) {
     return files.map(file => {
 
         const [ prefix, real_name ] = split_name(file),
-            is_number   = is_number_prefix(prefix),
-            title       = `${is_number ? `第 ${prefix} 章` : prefix} ${real_name}`,
-            name        = (is_number ? prefix : real_name) + '.md',
-            origin_path = path.join(op_dir, file),
-            target_path = path.join(op_dir, name),
-            ctime       = fs.statSync(origin_path).ctime.getTime();
+            is_number_prefix    = check_number_prefix(prefix),
+            title               = `${is_number_prefix ? `第 ${prefix} 章` : prefix} ${real_name}`,
+            name                = (is_number_prefix ? prefix : randomInt(1000, 10**8)) + '.md',
+            origin_path         = path.join(op_dir, file),
+            target_path         = path.join(op_dir, name),
+            ctime               = fs.statSync(origin_path).ctime.getTime();
 
         fs.renameSync(origin_path, target_path);
 
