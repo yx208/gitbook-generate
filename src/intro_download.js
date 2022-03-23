@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         极客时间保存文章简介
-// @namespace    https://github.com/purice93
+// @namespace    https://github.com/InmoJl
 // @version      0.0.1
 // @description  在极客时间专栏内容页面增加一个保存按钮，点击后将正文以markdown格式下载保存
 // @author       元弦
