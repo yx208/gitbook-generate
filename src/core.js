@@ -74,18 +74,6 @@ function gen_toc(root_path, post_relative_path, files) {
 }
 
 /**
- * 把开篇词放到最前面
- * @param {object[]} files
- */
-function extract_introduction(files) {
-    const index = files.findIndex(file => file.title.startsWith("开篇词"));
-    if (index !== -1) {
-        const target = files.splice(index, 1)[0];
-        files.unshift(target);
-    }
-}
-
-/**
  * 有些图片后面有查询条件，需要清除它，不然报错
  * @param {object[]} files
  */
@@ -158,7 +146,6 @@ module.exports = {
     input_article_path,
     rename_articles,
     sort_files,
-    extract_introduction,
     gen_toc,
     clear_img_query
 }

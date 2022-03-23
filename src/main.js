@@ -4,7 +4,6 @@ const {
     input_article_path,
     rename_articles,
     sort_files,
-    extract_introduction,
     gen_toc,
     clear_img_query
 } = require('./core.js');
@@ -18,7 +17,6 @@ async function main() {
 
     clear_img_query(files);
     sort_files(files);
-    extract_introduction(files);
     gen_toc(root_absolute_path, article_path, files);
 
     console.log("生成成功 Done.");
